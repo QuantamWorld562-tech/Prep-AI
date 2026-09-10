@@ -1,23 +1,24 @@
+import "dotenv/config";
 import express from "express";
-import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 import connectDb from "./config/db.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import roadmapRouter from "./routes/roadmapRoutes.js";
 import taskRouter from "./routes/taskRoutes.js";
 
-dotenv.config({
-  path: ".env",
-});
-
 const app = express();
 
 app.use(express.json());
-app.use(errorHandler);
+app.use(cookieParser());
+
 
 //api routes
 app.use('/api/v1/roadmap',roadmapRouter);
 app.use('/api/v1/task',taskRouter);
 
+
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 

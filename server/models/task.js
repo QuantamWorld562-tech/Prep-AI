@@ -15,7 +15,7 @@ const taskSchema = new mongoose.Schema({
     resourceLink:{type:String,default:""},
     status:{
         type:String,
-        enum:['Pending','In progress','Completed'],
+        enum:['Pending','In Progress','Completed'],
         default:'Pending',
     },
 
