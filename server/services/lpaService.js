@@ -24,6 +24,6 @@ export const recalculateUserLPA = async (userId) => {
     return newCurrentLPA;
 
   } catch (error) {
-    throw error;
+    next(error);
   }
 };
