@@ -3,6 +3,33 @@ import { Task } from "../models/task.js";
 import { User } from "../models/user.js";
 import { generateRoadmapJSON } from "../services/llmService.js";
 
+
+// ─── Get Active Roadmap ───────────────────────────────────────────────────────
+export const getMyRoadmap = async (req, res, next) => {
+  try {
+    const userId = req.id || req.user?._id;
+
+    if (!userId) {
+      res.status(401);
+      throw new Error("User not authenticated. Please log in.");
+    }
+
+    const roadmap = await Roadmap.findOne({
+      userId: userId,
+      isActive: true,
+    }).populate({ path: "weeks.tasks", model: "Task" });
+
+    if (!roadmap) {
+      res.status(404);
+      throw new Error("No Active roadmap found. Please generate one first.");
+    }
+
+    res.status(200).json({ success: true, data: roadmap });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ─── Generate Roadmap (AI) ───────────────────────────────────────────────────
 export const generateRoadmap = async (req, res, next) => {
   try {
@@ -85,28 +112,3 @@ export const generateRoadmap = async (req, res, next) => {
   }
 };
 
-// ─── Get Active Roadmap ───────────────────────────────────────────────────────
-export const getMyRoadmap = async (req, res, next) => {
-  try {
-    const userId = req.id || req.user?._id;
-
-    if (!userId) {
-      res.status(401);
-      throw new Error("User not authenticated. Please log in.");
-    }
-
-    const roadmap = await Roadmap.findOne({
-      userId: userId,
-      isActive: true,
-    }).populate({ path: "weeks.tasks", model: "Task" });
-
-    if (!roadmap) {
-      res.status(404);
-      throw new Error("No Active roadmap found. Please generate one first.");
-    }
-
-    res.status(200).json({ success: true, data: roadmap });
-  } catch (error) {
-    next(error);
-  }
-};

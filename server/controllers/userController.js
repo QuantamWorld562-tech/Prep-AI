@@ -18,18 +18,19 @@ const hashValue = (value) =>
  * is sent cross-origin (Vercel frontend → Render backend).
  * In development both run on localhost so Strict is fine, but None works too.
  */
-const cookieOptions = {
-  httpOnly: true,
-  sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict",
-  secure: process.env.NODE_ENV === "production",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
 
-const serializeUser = (user) => {
-  const userObject = user.toObject ? user.toObject() : { ...user };
-  delete userObject.password;
-  return userObject;
-};
+// const cookieOptions = {
+//   httpOnly: true,
+//   sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict",
+//   secure: process.env.NODE_ENV === "production",
+//   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+// };
+
+// const serializeUser = (user) => {
+//   const userObject = user.toObject ? user.toObject() : { ...user };
+//   delete userObject.password;
+//   return userObject;
+// };
 
 // ─── Sign Up ─────────────────────────────────────────────────────────────────
 
