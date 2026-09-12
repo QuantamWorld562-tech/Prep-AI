@@ -3,6 +3,12 @@ import bcrypt from "bcrypt";
 
 import jwt from "jsonwebtoken";
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
 
 // ─── Sign Up ─────────────────────────────────────────────────────────────────
 
@@ -44,7 +50,7 @@ export const signUp = async (req, res) => {
       .json({
         success: true,
         message: "Account created successfully",
-        user: serializeUser(user),
+        user: user,
       });
   } catch (error) {
     console.error(error);
@@ -89,7 +95,7 @@ export const login = async (req, res) => {
       .json({
         success: true,
         message: `Welcome back ${user.userName}`,
-        user: serializeUser(user),
+        user: user,
       });
   } catch (error) {
     console.error(error);

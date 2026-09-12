@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
     // AI GPS specific fields
     targetLpa: {
       type: Number,
-      required: true,
+       required: true,
     },
     targetTier: {
       type: String,

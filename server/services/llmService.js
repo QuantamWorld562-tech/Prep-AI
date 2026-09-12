@@ -1,13 +1,27 @@
-import OpenAI from "openai";
+// ─── OpenAI (commented out) ────────────────────────────────────────────────
+// import OpenAI from "openai";
+//
+// let openai;
+// const getOpenAI = () => {
+//   if (!openai) {
+//     openai = new OpenAI({
+//       apiKey: process.env.OPENAI_API_KEY,
+//     });
+//   }
+//   return openai;
+// };
+// ──────────────────────────────────────────────────────────────────────────────
 
-let openai;
-const getOpenAI = () => {
-  if (!openai) {
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+import { GoogleGenAI } from "@google/genai";
+
+let gemini;
+const getGemini = () => {
+  if (!gemini) {
+    gemini = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
     });
   }
-  return openai;
+  return gemini;
 };
 
 export const generateRoadmapJSON = async (targetTier, targetLpa) => {
@@ -30,13 +44,26 @@ export const generateRoadmapJSON = async (targetTier, targetLpa) => {
       ]
     }
   `;
-  const client = getOpenAI();
-  const response = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "system", content: prompt }],
-    response_format: { type: "json_object" },
+
+  // ─── OpenAI call (commented out) ──────────────────────────────────────────
+  // const client = getOpenAI();
+  // const response = await client.chat.completions.create({
+  //   model: "gpt-4o-mini",
+  //   messages: [{ role: "system", content: prompt }],
+  //   response_format: { type: "json_object" },
+  // });
+  // return JSON.parse(response.choices[0].message.content);
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const client = getGemini();
+  const response = await client.models.generateContent({
+    model: "gemini-3.6-flash",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+    },
   });
 
-  return JSON.parse(response.choices[0].message.content);
+  const text = response.text;
+  return JSON.parse(text);
 };
-

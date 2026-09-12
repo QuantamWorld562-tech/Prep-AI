@@ -34,6 +34,7 @@ export const getMyRoadmap = async (req, res, next) => {
 export const generateRoadmap = async (req, res, next) => {
   try {
     const userId = req.id || req.user?._id;
+    const {targetTier,targetLpa} = req.body;
 
     if (!userId) {
       res.status(401);
@@ -46,15 +47,26 @@ export const generateRoadmap = async (req, res, next) => {
       throw new Error("User not found.");
     }
 
-    if (!user.targetTier || !user.targetLpa) {
+    const resolvedTier = user.targetTier || targetTier;
+    const resolvedLpa  = user.targetLpa  || targetLpa;
+
+    if (!resolvedTier || !resolvedLpa) {
       res.status(400);
       throw new Error(
-        "Please complete your profile with targetTier and targetLpa first.",
+        "Please provide targetTier and targetLpa in the request body.",
       );
     }
 
+    // Persist to user profile if new values were supplied in the body
+    if (targetTier || targetLpa) {
+      await User.findByIdAndUpdate(userId, {
+        targetTier: resolvedTier,
+        targetLpa:  resolvedLpa,
+      });
+    }
+
     // 1. Fetch JSON from our LLM Service
-    const aiData = await generateRoadmapJSON(user.targetTier, user.targetLpa);
+    const aiData = await generateRoadmapJSON(resolvedTier, resolvedLpa);
 
     if (!aiData?.weeks || !Array.isArray(aiData.weeks)) {
       res.status(502);
@@ -67,7 +79,7 @@ export const generateRoadmap = async (req, res, next) => {
     // 3. Create new Roadmap document
     const roadmap = await Roadmap.create({
       userId: user._id,
-      targetTier: user.targetTier,
+      targetTier: resolvedTier,
       isActive: true,
       weeks: [],
     });
