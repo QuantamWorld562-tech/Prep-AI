@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    username: {
+    userName: {
       type: String,
       required: true,
       trim: true,
@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    //ai gps specific fields
+    // AI GPS specific fields
     targetLpa: {
       type: Number,
       required: true,

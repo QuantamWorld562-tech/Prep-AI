@@ -1,6 +1,6 @@
-import { Roadmap } from "../models/roadmap.js";
-import { Task } from "../models/task.js";
-import { User } from "../models/user.js";
+import { Roadmap } from "../models/roadmapModel.js";
+import { Task } from "../models/taskModel.js";
+import { User } from "../models/userModel.js";
 import { generateRoadmapJSON } from "../services/llmService.js";
 
 
