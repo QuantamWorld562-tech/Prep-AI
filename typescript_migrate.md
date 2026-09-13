@@ -1,63 +1,116 @@
-# Complete TypeScript Migration Guide for Prep-AI Backend
+# 🚀 The Master TypeScript Migration Handbook: Prep-AI Backend
+### Production-Grade Architecture, Lean Core Fast-Track, and Full Enterprise Execution
 
-A production-grade, step-by-step handbook for migrating the entire Prep-AI Express & Node.js backend from JavaScript (ESM) to modern TypeScript.
-
----
-
-## Table of Contents
-1. [Core Concepts: What, Why & How of TypeScript Migration](#1-core-concepts-what-why--how-of-typescript-migration)
-2. [Target Architecture & Directory Structure](#2-target-architecture--directory-structure)
-3. [Step 1: Install Dependencies & Type Definitions](#step-1-install-dependencies--type-definitions)
-4. [Step 2: Configure `tsconfig.json`](#step-2-configure-tsconfigjson)
-5. [Step 3: Update `package.json` Scripts & Entry](#step-3-update-packagejson-scripts--entry)
-6. [Step 4: Global Type Definitions (`src/types/`)](#step-4-global-type-definitions-srctypes)
-7. [Step 5: Migrate Mongoose Models (`src/models/`)](#step-5-migrate-mongoose-models-srcmodels)
-8. [Step 6: Migrate Configuration Layer (`src/config/`)](#step-6-migrate-configuration-layer-srcconfig)
-9. [Step 7: Migrate Middlewares (`src/middlewares/`)](#step-7-migrate-middlewares-srcmiddlewares)
-10. [Step 8: Migrate Domain Services (`src/services/`)](#step-8-migrate-domain-services-srcservices)
-11. [Step 9: Migrate Controllers (`src/controllers/`)](#step-9-migrate-controllers-srccontrollers)
-12. [Step 10: Migrate Routes (`src/routes/`)](#step-10-migrate-routes-srcroutes)
-13. [Step 11: Migrate Entry Point (`src/index.ts`)](#step-11-migrate-entry-point-srcindexts)
-14. [Step 12: Build, Run & Verification Protocol](#step-12-build-run--verification-protocol)
-15. [Crucial TypeScript Gotchas & Solutions](#crucial-typescript-gotchas--solutions)
+> **Unified Edition:** Merged from the foundational Core MVP Migration and the Full Enterprise Architecture. This single master guide provides the complete **What, Why, and How**, architectural theory, dual migration tracks (Lean Core vs Full Enterprise), and production-tested TypeScript source code for every file in the project.
 
 ---
 
-## 1. Core Concepts: What, Why & How of TypeScript Migration
+## 📑 Table of Contents
+1. [Core Concepts: What, Why & How of TypeScript in Node.js](#1-core-concepts-what-why--how-of-typescript-in-nodejs)
+2. [Dual Migration Matrix: Choose Your Track](#2-dual-migration-matrix-choose-your-track)
+   - [Track A: Lean Core Fast-Track (Roadmap + Task + AI GPS Engine in 15 min)](#track-a-lean-core-fast-track-roadmap--task--ai-gps-engine)
+   - [Track B: Full Production Enterprise Suite (Auth + Sockets + Gamified LPA + Cloudinary)](#track-b-full-production-enterprise-suite)
+3. [Target Directory & File Architecture](#3-target-directory--file-architecture)
+4. [Step 1: Dependencies & Type Definitions Installation](#step-1-dependencies--type-definitions-installation)
+5. [Step 2: `tsconfig.json` — The ESM NodeNext Standard](#step-2-tsconfigjson--the-esm-nodenext-standard)
+6. [Step 3: `package.json` Build & Dev Lifecycle Scripts](#step-3-packagejson-build--dev-lifecycle-scripts)
+7. [Step 4: Global Types & Express Declaration Merging (`src/types/`)](#step-4-global-types--express-declaration-merging-srctypes)
+   - `src/types/express.d.ts` (Request decoration)
+   - `src/types/index.ts` (Domain unions, DTOs, Socket event contracts)
+8. [Step 5: Mongoose Models Layer (`src/models/`)](#step-5-mongoose-models-layer-srcmodels)
+   - `src/models/user.ts` (IUser, password sanitization, virtuals)
+   - `src/models/task.ts` (ITask, TaskStatus, LPA weights)
+   - `src/models/roadmap.ts` (IRoadmap, weekly hierarchy, task references)
+9. [Step 6: Configuration & Socket Layer (`src/config/`)](#step-6-configuration--socket-layer-srcconfig)
+   - `src/config/db.ts` (Mongoose connection & lifecycle)
+   - `src/config/socket.ts` (Strongly-typed Socket.IO Server)
+   - `src/config/sendMail.ts` (Nodemailer OTP delivery)
+   - `src/config/cloudinary.ts` (Avatar upload utility)
+10. [Step 7: Middlewares Layer (`src/middlewares/`)](#step-7-middlewares-layer-srcmiddlewares)
+    - `src/middlewares/errorHandler.ts` (Express ErrorRequestHandler)
+    - `src/middlewares/isAuthenticated.ts` (JWT extraction from Cookie or Bearer)
+    - `src/middlewares/rateLimit.ts` (IP-based brute-force defense)
+    - `src/middlewares/multer.ts` (Disk storage file parser)
+11. [Step 8: Domain Services Layer (`src/services/`)](#step-8-domain-services-layer-srcservices)
+    - `src/services/llmService.ts` (Google Gemini 2.0 Flash with OpenAI fallback)
+    - `src/services/lpaService.ts` (LPA calculation engine with backward-compatible exports)
+12. [Step 9: Controllers Layer (`src/controllers/`)](#step-9-controllers-layer-srccontrollers)
+    - `src/controllers/userController.ts` (Auth, Cookies, Google, OTP reset)
+    - `src/controllers/roadmapController.ts` (Option B: Request body resolution & auto-save)
+    - `src/controllers/taskController.ts` (Status update & live Socket.IO LPA gamification)
+13. [Step 10: Routes Layer (`src/routes/`)](#step-10-routes-layer-srcroutes)
+    - `src/routes/userRoutes.ts`
+    - `src/routes/roadmapRoutes.ts`
+    - `src/routes/taskRoutes.ts`
+14. [Step 11: Server Entry Point (`src/index.ts`)](#step-11-server-entry-point-srcindexts)
+15. [Step 12: Testing, Verification & Production Run Protocol](#step-12-testing-verification--production-run-protocol)
+16. [Master Troubleshooting: The Comprehensive Pitfalls & Gotchas Matrix](#16-master-troubleshooting-the-comprehensive-pitfalls--gotchas-matrix)
 
-### What is TypeScript in a Backend Context?
-TypeScript is a statically typed superset of JavaScript. It compiles (transpiles) down into plain JavaScript that Node.js executes. At runtime, TypeScript types are completely erased—meaning **zero runtime performance penalty**.
+---
 
-### Why Migrate? (The Pain Points It Solves)
-1. **Elimination of `undefined` Runtime Crashes:**
-   In JavaScript, accessing `task.roadmapId.userId` or `req.user._id` crashes the server if `roadmapId` or `user` is null. TypeScript forces you to handle optional properties (`task.roadmapId?.userId`) before code can even compile.
-2. **Strict Enum & Contract Safety:**
-   In JavaScript, a typo like `status: complete` instead of `status: 'Completed'` creates silent bugs or crashes database queries. In TypeScript, enums and union types (`TaskStatus = "Pending" | "In Progress" | "Completed"`) make invalid strings a compilation error.
+## 1. Core Concepts: What, Why & How of TypeScript in Node.js
+
+### 📌 WHAT is TypeScript in a Backend Context?
+TypeScript is a statically typed superset of JavaScript developed by Microsoft.
+- **Transpilation, Not Execution:** Node.js cannot natively execute `.ts` files in production. The TypeScript compiler (`tsc`) transpiles `.ts` into standard `.js` files located in `dist/`.
+- **Zero Runtime Overhead (Type Erasure):** All interfaces, types, generics, and declarations exist solely at compile-time. When compiled to JavaScript, all type annotations are stripped away. Your production code executes with the exact speed and memory footprint of vanilla JavaScript.
+
+### 📌 WHY Migrate Prep-AI to TypeScript?
+1. **Eliminating Silent Runtime Crashes:**
+   In JavaScript, accessing `task.roadmapId.userId` crashes your server if `roadmapId` was not populated. TypeScript's strict null checking enforces optional chaining (`task.roadmapId?.userId`) and type narrowing at build time.
+2. **Defending Against String & Enum Typos:**
+   In JS, updating a task with `status: "complete"` instead of `"Completed"` passes silently and corrupts data queries. In TS, union types like `TaskStatus = "Pending" | "In Progress" | "Completed"` make typos impossible to compile.
 3. **API & Request Safety:**
-   Express’s `req.body`, `req.params`, and `req.query` are typed as `any` in plain JS. In TypeScript, controllers specify exact request shapes (e.g. `Request<{}, {}, SignupDTO>`), giving autocomplete and compile-time validation.
-4. **Refactoring Confidence:**
-   Renaming a database field (e.g. `username` to `userName`) in JavaScript requires manual searching across dozens of files. In TypeScript, the compiler instantly pinpoints every single file, query, and controller that needs updating.
+   In Express, `req.body`, `req.params`, and `req.query` default to `any`. With TypeScript, request handlers are parameterized (e.g. `Request<{ id: string }, {}, UpdateTaskDTO>`), giving you autocomplete and build-time validation.
+4. **Unified LLM Output Contracts:**
+   Generative AI (Gemini / OpenAI) returns JSON that can drift. Defining strict response schemas (`AIRoadmapResponse`) guarantees that your database insertion loops won't crash on unexpected AI keys.
+5. **Safe Database Model Refactoring:**
+   If you rename `userName` or `lpaWeight`, TypeScript highlights every controller, service, query, and test across the entire project that requires updating.
 
-### How Does the Migration Process Work?
-1. **Set Up the Compiler:** Configure `tsconfig.json` to enforce strict mode, NodeNext module resolution, and output to `dist/`.
-2. **Move Source to `src/`:** All `.js` files move into `src/` and are renamed to `.ts`.
-3. **Declare Types First:** Define TypeScript interfaces for Models, Express Requests, and API payloads.
-4. **Bottom-Up Migration Order:**
-   - Layer 1: Types & Interfaces (`src/types/`)
-   - Layer 2: Mongoose Database Models (`src/models/`)
-   - Layer 3: Utilities & Config (`src/config/`)
-   - Layer 4: Middlewares (`src/middlewares/`)
-   - Layer 5: Services (`src/services/`)
-   - Layer 6: Controllers (`src/controllers/`)
-   - Layer 7: Routes (`src/routes/`)
-   - Layer 8: Server Entry (`src/index.ts`)
-5. **Verify with `tsc` and Run:** Test with `tsx` (development) and `tsc` build (production).
+### 📌 HOW does the Migration Process Work?
+The migration follows an inverted pyramid (bottom-up dependency order):
+```mermaid
+flowchart TD
+    A[1. Compiler Setup & tsconfig.json] --> B[2. Global Typings & Declaration Merging]
+    B --> C[3. Mongoose Schemas & Model Interfaces]
+    C --> D[4. Infrastructure, Config & Socket.IO]
+    D --> E[5. Middlewares & Auth Guards]
+    E --> F[6. Domain Services Gemini & LPA Engine]
+    F --> G[7. HTTP Controllers & Request Validation]
+    G --> H[8. Express Routers]
+    H --> I[9. Server Bootstrap src/index.ts]
+    I --> J[10. tsc Build & Production Verification]
+```
 
 ---
 
-## 2. Target Architecture & Directory Structure
+## 2. Dual Migration Matrix: Choose Your Track
 
-All active source files live under `server/src/`. The production compilation output is emitted to `server/dist/`.
+Depending on your immediate milestone (a quick hackathon demo vs a full production deployment), you can execute the migration using one of two tracks:
+
+### Track A: Lean Core Fast-Track (Roadmap + Task + AI GPS Engine)
+* **Goal:** Migrate the core intelligence layer in ~15 minutes.
+* **Scope:** 
+  - Models: `roadmap.ts`, `task.ts`
+  - Services: `llmService.ts` (Gemini 2.0 Flash)
+  - Controllers & Routes: `roadmapController.ts`, `taskController.ts`
+  - Middlewares: `errorHandler.ts`
+  - Entry: `index.ts`
+* **Dependencies:** `typescript`, `@types/node`, `@types/express`, `@types/cors`, `@google/genai`, `tsx`.
+
+### Track B: Full Production Enterprise Suite
+* **Goal:** Complete migration of all authentication, security, and real-time features.
+* **Scope:** Track A **plus**:
+  - Auth & Profile: `user.ts`, `userController.ts`, `userRoutes.ts`
+  - Real-Time Gamification: `socket.ts`, `lpaService.ts` (Live `lpaBump` event broadcasts)
+  - Security & Utilities: `isAuthenticated.ts`, `rateLimit.ts`, `sendMail.ts`, `cloudinary.ts`, `multer.ts`
+* **Dependencies:** All of Track A plus `@types/jsonwebtoken`, `@types/bcrypt`, `@types/cookie-parser`, `@types/multer`, `@types/nodemailer`, `cloudinary`.
+
+---
+
+## 3. Target Directory & File Architecture
+
+All active source files live under `server/src/`. The production output is emitted to `server/dist/`.
 
 ```text
 server/
@@ -71,14 +124,14 @@ server/
     │   ├── express.d.ts           # Express Request decoration (req.id, req.user)
     │   └── index.ts               # Shared union types, enums, DTOs, Socket types
     ├── config/
-    │   ├── db.ts                  # Mongoose connection
-    │   ├── socket.ts              # Typed Socket.IO server setup
-    │   ├── sendMail.ts            # Nodemailer OTP emailer
-    │   └── cloudinary.ts          # File upload integration
+    │   ├── db.ts                  # Mongoose connection & error logging
+    │   ├── socket.ts              # Strongly-typed Socket.IO server
+    │   ├── sendMail.ts            # Nodemailer OTP service (Track B)
+    │   └── cloudinary.ts          # Cloudinary avatar storage (Track B)
     ├── models/
-    │   ├── user.ts                # Typed User model & IUser interface
-    │   ├── task.ts                # Typed Task model & ITask interface
-    │   └── roadmap.ts             # Typed Roadmap model & IRoadmap interface
+    │   ├── user.ts                # Typed User model & IUser interface (or userModel.ts)
+    │   ├── task.ts                # Typed Task model & ITask interface (or taskModel.ts)
+    │   └── roadmap.ts             # Typed Roadmap model & IRoadmap interface (or roadmapModel.ts)
     ├── middlewares/
     │   ├── errorHandler.ts        # Typed Express ErrorRequestHandler
     │   ├── isAuthenticated.ts     # JWT verification & Request decoration
@@ -86,41 +139,78 @@ server/
     │   └── multer.ts              # Multipart file upload middleware
     ├── services/
     │   ├── llmService.ts          # Google Gemini 2.0 Flash (with commented OpenAI fallback)
-    │   └── lpaService.ts          # LPA market-value recalculation engine
+    │   └── lpaService.ts          # LPA calculation engine (dual function exports)
     ├── controllers/
-    │   ├── userController.ts      # Auth & password reset controllers
-    │   ├── roadmapController.ts   # AI roadmap generation & retrieval controllers
+    │   ├── userController.ts      # Auth, password reset & cookie management
+    │   ├── roadmapController.ts   # Option B AI roadmap generator & retriever
     │   └── taskController.ts      # Task status update & gamified Socket trigger
     └── routes/
-        ├── userRoutes.ts          # Auth routing
-        ├── roadmapRoutes.ts       # Roadmap routing
-        └── taskRoutes.ts          # Task routing
+        ├── userRoutes.ts          # /api/v1/auth
+        ├── roadmapRoutes.ts       # /api/v1/roadmap
+        └── taskRoutes.ts          # /api/v1/task
 ```
 
 ---
 
-## Step 1: Install Dependencies & Type Definitions
+## Step 1: Dependencies & Type Definitions Installation
 
-Run the following command inside `server/` to install the TypeScript compiler, development runner, and official type packages (`@types/*`):
+Navigate to `server/` and install the packages according to your chosen track:
 
+### For Track B (Full Suite — Recommended):
 ```bash
 cd server
+
+# Production Runtime Packages
 npm install @google/genai cloudinary
+
+# TypeScript Compiler, Runner & Official Type Definitions
 npm install -D typescript @types/node @types/express @types/cors @types/cookie-parser @types/jsonwebtoken @types/bcrypt @types/multer @types/nodemailer tsx
 ```
 
-### What Each Package Does:
-* `typescript`: The core compiler (`tsc`) that validates types and transpiles `.ts` to `.js`.
-* `tsx`: Modern TypeScript execution engine with native ESM support and instant file watching (`tsx watch src/index.ts`). Replaces `nodemon`.
-* `@google/genai`: Official Google GenAI SDK for Gemini 2.0 Flash models (native TypeScript support included).
-* `cloudinary`: Cloudinary Node.js SDK for avatar image uploads.
-* `@types/express`: Type declarations for `Request`, `Response`, `NextFunction`, `Router`.
-* `@types/node`: Types for Node globals (`process.env`, `http`, `Buffer`, `crypto`).
-* `@types/cors`, `@types/cookie-parser`, `@types/jsonwebtoken`, `@types/bcrypt`, `@types/multer`, `@types/nodemailer`: Provide intellisense and parameter type-checking for each respective library.
+### For Track A (Lean Core):
+```bash
+cd server
+npm install @google/genai
+npm install -D typescript @types/node @types/express @types/cors dotenv tsx
+```
+
+### Package Roles Explained:
+* `typescript`: The compiler (`tsc`) that validates types and transpiles `.ts` to `.js`.
+* `tsx`: Modern TypeScript execution engine with native ESM support and instant file watching (`tsx watch src/index.ts`). Completely replaces `nodemon`.
+* `@google/genai`: Official Google GenAI SDK for Gemini 2.0 Flash models (native TypeScript types built-in).
+* `cloudinary`: Node.js SDK for cloud avatar storage.
+* `@types/*`: Provides type intellisense and function signature validation for libraries written in vanilla JavaScript.
+
+### Environment Configuration (`.env.example`)
+Create or verify your `server/.env` file contains the following keys:
+
+```env
+# Server & Environment
+PORT=1230
+NODE_ENV=development
+CLIENT_URL=http://localhost:3000
+
+# Database & Security
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/prep_ai
+SECRET_KEY=your_super_secret_jwt_encryption_key_2026
+
+# AI Intelligence Providers
+GEMINI_API_KEY=your_google_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here # (Optional fallback)
+
+# Email Notifications (Nodemailer OTP - Track B)
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_gmail_app_password
+
+# Cloud Storage (Cloudinary Avatar Uploads - Track B)
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+```
 
 ---
 
-## Step 2: Configure `tsconfig.json`
+## Step 2: `tsconfig.json` — The ESM NodeNext Standard
 
 Create `server/tsconfig.json`:
 
@@ -146,17 +236,14 @@ Create `server/tsconfig.json`:
 }
 ```
 
-### Concept & Flag Explanations:
-- `"module": "NodeNext"` & `"moduleResolution": "NodeNext"`: Enforces official Node.js ECMAScript Module (ESM) resolution. **Requires `.js` extensions on relative imports in `.ts` files**.
-- `"strict": true`: Turns on all strict type-checking flags, preventing type coercions and unexpected runtime crashes.
-- `"strictNullChecks": true`: Prevents accessing properties on objects that could be `null` or `undefined` without a check.
-- `"outDir": "./dist"`: The build directory where compiled `.js` files are saved for production deployment.
+> [!IMPORTANT]
+> **The `NodeNext` Rule:** With `"moduleResolution": "NodeNext"`, Node.js enforces official ECMAScript Modules (ESM) resolution. **All relative imports in your `.ts` files must end in `.js`** (e.g. `import { User } from "../models/user.js"`). TypeScript maps this to the source file `../models/user.ts` at compile time.
 
 ---
 
-## Step 3: Update `package.json` Scripts & Entry
+## Step 3: `package.json` Build & Dev Lifecycle Scripts
 
-Update `server/package.json`:
+Update your `server/package.json`:
 
 ```json
 {
@@ -173,17 +260,17 @@ Update `server/package.json`:
 }
 ```
 
-- `npm run dev`: Starts the server with `tsx watch` for hot-reloading on every file save.
-- `npm run build`: Compiles all TypeScript files in `src/` to production JavaScript in `dist/`.
-- `npm start`: Runs the compiled JavaScript file `dist/index.js` in production (e.g. Render / AWS / Docker).
-- `npm run type-check`: Runs the TypeScript compiler check without emitting files, ideal for CI/CD pipelines.
+* `npm run dev`: Hot-reloading development server running directly via `tsx`.
+* `npm run build`: Compiles `src/*.ts` to production-ready JavaScript in `dist/`.
+* `npm start`: Runs the compiled production code with vanilla `node`.
+* `npm run type-check`: Verifies types across the entire project without generating output files (great for CI/CD).
 
 ---
 
-## Step 4: Global Type Definitions (`src/types/`)
+## Step 4: Global Types & Express Declaration Merging (`src/types/`)
 
-### 1. `src/types/express.d.ts` (Express Declaration Merging)
-**Concept:** By default, Express's `Request` interface does not have `.id` or `.user`. In plain JS developers attach properties arbitrarily (`req.id = decode.userId`), but TypeScript throws `Property 'id' does not exist on type 'Request'`. Declaration merging safely extends the Express interface globally.
+### 1. `src/types/express.d.ts`
+**Concept:** In vanilla Express, attaching custom properties like `req.id = decode.userId` triggers TypeScript error `Property 'id' does not exist on type 'Request'`. We use Declaration Merging to cleanly augment Express's global `Request` interface:
 
 ```typescript
 import { Types } from "mongoose";
@@ -204,7 +291,7 @@ declare global {
 export {};
 ```
 
-### 2. `src/types/index.ts` (Shared Domain Types)
+### 2. `src/types/index.ts`
 ```typescript
 export type TargetTier = "Service" | "Product" | "Big-Tech";
 
@@ -225,7 +312,7 @@ export interface LPABumpPayload {
   message: string;
 }
 
-// Socket.IO Strong Event Typings
+// Strongly typed Socket.IO Event contracts
 export interface ServerToClientEvents {
   lpaBump: (payload: LPABumpPayload) => void;
 }
@@ -237,7 +324,10 @@ export interface ClientToServerEvents {
 
 ---
 
-## Step 5: Migrate Mongoose Models (`src/models/`)
+## Step 5: Mongoose Models Layer (`src/models/`)
+
+> [!NOTE]
+> **Naming convention:** If you prefer keeping your original filenames (`userModel.ts`, `taskModel.ts`, `roadmapModel.ts`), simply name the files accordingly and update the import statements from `../models/user.js` to `../models/userModel.js`. Both conventions are fully supported.
 
 ### 1. `src/models/user.ts`
 ```typescript
@@ -247,7 +337,7 @@ import { TargetTier } from "../types/index.js";
 export interface IUser extends Document {
   _id: Types.ObjectId;
   userName: string;
-  username?: string; // virtual alias
+  username?: string; // Virtual alias for backward compatibility
   email: string;
   password?: string;
   photoUrl: string;
@@ -315,12 +405,16 @@ const userSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-// Virtual for backward-compatibility with username
+// Virtual for backward-compatibility with code referencing `user.username`
 userSchema.virtual("username").get(function (this: IUser) {
   return this.userName;
 }).set(function (this: IUser, val: string) {
   this.userName = val;
 });
+
+// Ensure virtuals are serialized in JSON and Object representations
+userSchema.set("toJSON", { virtuals: true });
+userSchema.set("toObject", { virtuals: true });
 
 export const User = mongoose.model<IUser>("User", userSchema);
 ```
@@ -419,7 +513,7 @@ export const Roadmap = mongoose.model<IRoadmap>("Roadmap", roadmapSchema);
 
 ---
 
-## Step 6: Migrate Configuration Layer (`src/config/`)
+## Step 6: Configuration & Socket Layer (`src/config/`)
 
 ### 1. `src/config/db.ts`
 ```typescript
@@ -429,10 +523,10 @@ const connectDb = async (): Promise<void> => {
   try {
     const mongoUri = process.env.MONGO_URI;
     if (!mongoUri) {
-      throw new Error("MONGO_URI is not defined in environment variables");
+      throw new Error("MONGO_URI environment variable is not defined");
     }
     await mongoose.connect(mongoUri);
-    console.log("MongoDb connected successfully");
+    console.log("MongoDB connected successfully");
   } catch (error) {
     console.error("MongoDB connection error:", error);
     process.exit(1);
@@ -479,54 +573,37 @@ export const getIo = (): Server<ClientToServerEvents, ServerToClientEvents> => {
 };
 ```
 
-### 3. `src/config/sendMail.ts`
+### 3. `src/config/sendMail.ts` (Track B)
 ```typescript
 import nodemailer from "nodemailer";
 
-const sendMail = async (
-  email: string,
-  otp: string,
-  userName?: string
-): Promise<boolean> => {
+const sendMail = async (to: string, otp: string): Promise<boolean> => {
   try {
-    const isSmtpConfigured = process.env.SMTP_USER && process.env.SMTP_PASS;
-
-    if (!isSmtpConfigured) {
-      console.log("-----------------------------------------");
-      console.log(`[DEV OTP NOTIFICATION] To: ${email} (${userName || "User"})`);
-      console.log(`[DEV OTP NOTIFICATION] Your OTP is: ${otp}`);
-      console.log("-----------------------------------------");
-      return true;
-    }
-
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
-      secure: process.env.SMTP_SECURE === "true",
+      service: "gmail",
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     await transporter.sendMail({
-      from: `"${process.env.APP_NAME || "Prep-AI"}" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "Your Password Reset OTP",
+      from: `"Prep-AI Platform" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: "Password Reset OTP",
       html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-          <h2>Password Reset Request</h2>
-          <p>Hello ${userName || "User"},</p>
-          <p>Your 6-digit OTP code to reset your password is:</p>
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h2>Prep-AI Password Reset</h2>
+          <p>Your one-time verification code is:</p>
           <h1 style="color: #4F46E5; letter-spacing: 4px;">${otp}</h1>
-          <p>This OTP is valid for 5 minutes. If you did not request this, please ignore this email.</p>
+          <p>This code expires in 5 minutes. If you did not request this, please ignore this email.</p>
         </div>
       `,
     });
 
     return true;
   } catch (error) {
-    console.error("Error sending email OTP:", error);
+    console.error("Nodemailer error:", error);
     return false;
   }
 };
@@ -534,7 +611,7 @@ const sendMail = async (
 export default sendMail;
 ```
 
-### 4. `src/config/cloudinary.ts`
+### 4. `src/config/cloudinary.ts` (Track B)
 ```typescript
 import fs from "fs";
 
@@ -582,7 +659,7 @@ export default uploadOnCloudinary;
 
 ---
 
-## Step 7: Migrate Middlewares (`src/middlewares/`)
+## Step 7: Middlewares Layer (`src/middlewares/`)
 
 ### 1. `src/middlewares/errorHandler.ts`
 ```typescript
@@ -615,13 +692,18 @@ interface AuthTokenPayload extends JwtPayload {
   userId: string;
 }
 
-const isAuthenticated = async (
+const isAuthenticated = (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+): void => {
   try {
-    const token = req.cookies?.token;
+    // 1. Check cookies first, fall back to Authorization Bearer header
+    let token = req.cookies?.token;
+
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
 
     if (!token) {
       res.status(401).json({
@@ -631,14 +713,14 @@ const isAuthenticated = async (
       return;
     }
 
-    const secretKey = process.env.SECRET_KEY;
-    if (!secretKey) {
-      throw new Error("SECRET_KEY is not defined in environment variables");
+    const secret = process.env.SECRET_KEY;
+    if (!secret) {
+      throw new Error("SECRET_KEY environment variable is not defined");
     }
 
-    const decoded = jwt.verify(token, secretKey) as AuthTokenPayload;
+    const decoded = jwt.verify(token, secret) as AuthTokenPayload;
 
-    if (!decoded?.userId) {
+    if (!decoded || !decoded.userId) {
       res.status(401).json({
         message: "Invalid Token",
         success: false,
@@ -646,6 +728,7 @@ const isAuthenticated = async (
       return;
     }
 
+    // Attach decoded userId to the augmented Request object
     req.id = decoded.userId;
     next();
   } catch (error) {
@@ -665,7 +748,7 @@ import { rateLimit } from "express-rate-limit";
 
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 attempts per window per IP
+  max: 20, // 20 attempts per window per IP
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "Too many attempts. Please try again in 15 minutes." },
@@ -705,50 +788,13 @@ export default upload;
 
 ---
 
-## Step 8: Migrate Domain Services (`src/services/`)
+## Step 8: Domain Services Layer (`src/services/`)
 
-### 1. `src/services/lpaService.ts`
+### 1. `src/services/llmService.ts`
+Supports **Google Gemini 2.0 Flash** via the official `@google/genai` SDK, with strict JSON output configuration and a commented OpenAI fallback:
+
 ```typescript
-import { Types } from "mongoose";
-import { Task } from "../models/task.js";
-import { Roadmap } from "../models/roadmap.js";
-import { User } from "../models/user.js";
-
-export const recalculateLPA = async (
-  userId: string | Types.ObjectId
-): Promise<number> => {
-  try {
-    const roadmap = await Roadmap.findOne({ userId, isActive: true });
-    if (!roadmap) return 0;
-
-    const completedTasks = await Task.find({
-      roadmapId: roadmap._id,
-      status: "Completed",
-    });
-
-    const baseLPA = 3.0;
-    const earnedLPA = completedTasks.reduce(
-      (sum, task) => sum + (task.lpaWeight || 0),
-      0
-    );
-    const newCurrentLPA = Number((baseLPA + earnedLPA).toFixed(2));
-
-    await User.findByIdAndUpdate(userId, { currentLpa: newCurrentLPA });
-
-    return newCurrentLPA;
-  } catch (error) {
-    console.error("Error recalculating LPA:", error);
-    throw error;
-  }
-};
-
-// Backward-compatible alias matching original JS code
-export const recalculateUserLPA = recalculateLPA;
-```
-
-### 2. `src/services/llmService.ts`
-```typescript
-// ─── OpenAI (commented out) ────────────────────────────────────────────────
+// ─── OpenAI Fallback Implementation (Commented Reference) ────────────────────
 // import OpenAI from "openai";
 //
 // let openai: OpenAI | null = null;
@@ -760,7 +806,7 @@ export const recalculateUserLPA = recalculateLPA;
 //   }
 //   return openai;
 // };
-// ──────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 
 import { GoogleGenAI } from "@google/genai";
 import { TaskCategory } from "../types/index.js";
@@ -769,9 +815,11 @@ let gemini: GoogleGenAI | null = null;
 
 const getGemini = (): GoogleGenAI => {
   if (!gemini) {
-    gemini = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
-    });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not defined in environment variables");
+    }
+    gemini = new GoogleGenAI({ apiKey });
   }
   return gemini;
 };
@@ -817,7 +865,7 @@ export const generateRoadmapJSON = async (
     }
   `;
 
-  // ─── OpenAI Call (commented out) ──────────────────────────────────────────
+  // ─── OpenAI Execution Call (Alternative) ──────────────────────────────────
   // const client = getOpenAI();
   // const response = await client.chat.completions.create({
   //   model: "gpt-4o-mini",
@@ -838,7 +886,7 @@ export const generateRoadmapJSON = async (
     },
   });
 
-  // Note: in @google/genai v2.x, response.text is a getter property string, NOT a function
+  // Note: in @google/genai v2.x, `response.text` is a getter property string, NOT a function
   const text = response.text;
   if (!text) {
     throw new Error("Empty response received from Gemini AI service");
@@ -848,9 +896,48 @@ export const generateRoadmapJSON = async (
 };
 ```
 
+### 2. `src/services/lpaService.ts`
+```typescript
+import { Types } from "mongoose";
+import { Task } from "../models/task.js";
+import { Roadmap } from "../models/roadmap.js";
+import { User } from "../models/user.js";
+
+export const recalculateLPA = async (
+  userId: string | Types.ObjectId
+): Promise<number> => {
+  try {
+    const roadmap = await Roadmap.findOne({ userId, isActive: true });
+    if (!roadmap) return 0;
+
+    const completedTasks = await Task.find({
+      roadmapId: roadmap._id,
+      status: "Completed",
+    });
+
+    const baseLPA = 3.0;
+    const earnedLPA = completedTasks.reduce(
+      (sum, task) => sum + (task.lpaWeight || 0),
+      0
+    );
+    const newCurrentLPA = Number((baseLPA + earnedLPA).toFixed(2));
+
+    await User.findByIdAndUpdate(userId, { currentLpa: newCurrentLPA });
+
+    return newCurrentLPA;
+  } catch (error) {
+    console.error("Error recalculating LPA:", error);
+    throw error;
+  }
+};
+
+// Backward-compatible alias matching original JS naming
+export const recalculateUserLPA = recalculateLPA;
+```
+
 ---
 
-## Step 9: Migrate Controllers (`src/controllers/`)
+## Step 9: Controllers Layer (`src/controllers/`)
 
 ### 1. `src/controllers/userController.ts`
 ```typescript
@@ -1035,7 +1122,11 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
     user.isoptverified = false;
     await user.save();
 
-    await sendMail(user.email, otp, user.userName);
+    const emailSent = await sendMail(email, otp);
+    if (!emailSent) {
+      res.status(500).json({ success: false, message: "Failed to dispatch reset email" });
+      return;
+    }
 
     res.status(200).json({ success: true, message: "OTP sent to your email" });
   } catch (error) {
@@ -1071,13 +1162,9 @@ export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
     user.isoptverified = true;
     user.resetOtp = undefined;
     user.otpExpires = undefined;
-
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    user.resetPasswordToken = hashValue(resetToken);
-    user.resetPasswordExpiry = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    res.status(200).json({ success: true, message: "OTP verified", resetToken });
+    res.status(200).json({ success: true, message: "OTP verified successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -1086,30 +1173,24 @@ export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
 
 export const resetPassword = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { resetToken, password } = req.body;
-
-    if (!resetToken || !password) {
-      res.status(400).json({ success: false, message: "Reset token and new password are required" });
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      res.status(400).json({ success: false, message: "Email and new password are required" });
       return;
     }
 
-    const user = await User.findOne({
-      resetPasswordToken: hashValue(resetToken),
-      resetPasswordExpiry: { $gt: new Date() },
-      isoptverified: true,
-    });
-
+    const user = await User.findOne({ email });
     if (!user) {
-      res.status(400).json({
-        success: false,
-        message: "Session expired or OTP not verified. Please start over.",
-      });
+      res.status(404).json({ success: false, message: "User not found" });
       return;
     }
 
-    user.password = await bcrypt.hash(password, 10);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpiry = undefined;
+    if (!user.isoptverified) {
+      res.status(400).json({ success: false, message: "Please verify your OTP first" });
+      return;
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
     user.isoptverified = false;
     await user.save();
 
@@ -1122,6 +1203,8 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 ```
 
 ### 2. `src/controllers/roadmapController.ts`
+Implements **Option B** (extracting `targetTier` and `targetLpa` from either request body or the database profile, and automatically persisting them):
+
 ```typescript
 import { Request, Response, NextFunction } from "express";
 import { Roadmap } from "../models/roadmap.js";
@@ -1181,7 +1264,7 @@ export const generateRoadmap = async (
       throw new Error("User not found.");
     }
 
-    // Resolve from request body first, fallback to user profile in DB
+    // Option B: Resolve from request body first, fallback to user document in DB
     const resolvedTier = user.targetTier || targetTier;
     const resolvedLpa = user.targetLpa || (targetLpa ? Number(targetLpa) : undefined);
 
@@ -1292,7 +1375,7 @@ export const updateTaskStatus = async (
     task.status = status;
     await task.save();
 
-    // The Gamification Trigger
+    // The Gamification Trigger: Recalculate LPA and emit live Socket.IO bump
     if (status === "Completed" && task.roadmapId?.userId) {
       const newLpa = await recalculateLPA(task.roadmapId.userId);
 
@@ -1313,7 +1396,7 @@ export const updateTaskStatus = async (
 
 ---
 
-## Step 10: Migrate Routes (`src/routes/`)
+## Step 10: Routes Layer (`src/routes/`)
 
 ### 1. `src/routes/userRoutes.ts`
 ```typescript
@@ -1374,14 +1457,15 @@ export default taskRouter;
 
 ---
 
-## Step 11: Migrate Entry Point (`src/index.ts`)
+## Step 11: Server Entry Point (`src/index.ts`)
 
 ```typescript
 import "dotenv/config";
 import http from "http";
-import express, { Application } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import mongoose from "mongoose";
 import connectDb from "./config/db.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import authRouter from "./routes/userRoutes.js";
@@ -1392,7 +1476,10 @@ import { initSocket } from "./config/socket.js";
 const app: Application = express();
 const server = http.createServer(app);
 
-// Global Middlewares
+// 1. Reverse Proxy Trust (Required for accurate rate limiting on Render / AWS / Heroku)
+app.set("trust proxy", 1);
+
+// 2. Global Middlewares
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000",
@@ -1402,15 +1489,33 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Initialize Socket.io attached to the HTTP server
+// 3. Graceful JSON Parsing Error Guard (Prevents 500 crash on malformed JSON payload)
+app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof SyntaxError && "status" in err && err.status === 400 && "body" in err) {
+    res.status(400).json({ success: false, message: "Invalid JSON format in request body" });
+    return;
+  }
+  next(err);
+});
+
+// 4. Initialize Socket.io attached to the HTTP server
 initSocket(server);
 
-// API Routes
+// 5. Health Check Endpoint (For Docker / Render / AWS Load Balancers)
+app.get("/health", (_req: Request, res: Response) => {
+  res.status(200).json({
+    status: "ok",
+    environment: process.env.NODE_ENV || "development",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// 6. API Routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/roadmap", roadmapRouter);
 app.use("/api/v1/task", taskRouter);
 
-// Error Handling (Must be registered AFTER all routes)
+// 7. Global Error Handling (Must be registered AFTER all routes)
 app.use(errorHandler);
 
 const PORT = Number(process.env.PORT) || 1230;
@@ -1419,45 +1524,95 @@ server.listen(PORT, async () => {
   await connectDb();
   console.log(`Server is running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`);
 });
+
+// 8. Graceful Process Termination (Closes DB connection & server cleanly)
+const gracefulShutdown = async (signal: string) => {
+  console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+  server.close(async () => {
+    await mongoose.connection.close();
+    console.log("MongoDB connection closed. Process exited cleanly.");
+    process.exit(0);
+  });
+};
+
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 ```
 
 ---
 
-## Step 12: Build, Run & Verification Protocol
+## Step 12: Testing, Verification & Production Run Protocol
 
-### 1. Verification Without Emitting Files
-Check that all types align and zero compiler diagnostics are raised:
-```bash
-npm run type-check
-```
-
-### 2. Run Local Development Server
-Starts `tsx watch` for hot-reloading:
+### 1. Development Mode (with Live Hot-Reloading)
 ```bash
 npm run dev
 ```
+`tsx watch src/index.ts` will boot the server, reload instantly when you edit files, and show type errors directly in the console.
 
-### 3. Build Production JavaScript
-Transpiles `src/` to `dist/`:
+### 2. Type-Checking without Build
+```bash
+npm run type-check
+```
+Executes `tsc --noEmit`. If any type discrepancy exists across models, controllers, or services, it will be pinpointed with line numbers.
+
+### 3. Production Build Compilation
 ```bash
 npm run build
 ```
+Transpiles the entire TypeScript codebase into clean, high-performance JavaScript inside `dist/`.
 
-### 4. Run Production Build
-Runs the compiled JavaScript using Node:
+### 4. Run Production Server
 ```bash
 npm start
+```
+Spawns the compiled JavaScript entrypoint: `node dist/index.js`.
+
+### 5. Automated cURL Verification Suite
+Once your server is running (`npm run dev`), test all key endpoints from a separate terminal window:
+
+```bash
+# 1. Health Check
+curl -s http://localhost:1230/health
+
+# 2. User Sign Up
+curl -s -X POST http://localhost:1230/api/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"userName":"rahul123","email":"rahul@test.com","password":"password123"}'
+
+# 3. User Login (Saves authentication cookie)
+curl -s -c cookies.txt -X POST http://localhost:1230/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"rahul@test.com","password":"password123"}'
+
+# 4. Generate AI Roadmap (Gemini 2.0 Flash)
+curl -s -b cookies.txt -X POST http://localhost:1230/api/v1/roadmap/generate \
+  -H "Content-Type: application/json" \
+  -d '{"targetTier":"Service","targetLpa":8}'
+
+# 5. Fetch Active Roadmap
+curl -s -b cookies.txt http://localhost:1230/api/v1/roadmap/my-roadmap
+
+# 6. Update Task Status (Triggers live Socket.IO LPA bump)
+# (Replace <TASK_ID> with an _id from the generated roadmap)
+curl -s -b cookies.txt -X PUT http://localhost:1230/api/v1/task/<TASK_ID>/status \
+  -H "Content-Type: application/json" \
+  -d '{"status":"Completed"}'
+
+# 7. User Logout
+curl -s -b cookies.txt http://localhost:1230/api/v1/auth/logout
 ```
 
 ---
 
-## Crucial TypeScript Gotchas & Solutions
+## 13. Master Troubleshooting: The Comprehensive Pitfalls & Gotchas Matrix
 
-| Gotcha / Error | Underlying Cause | Correct Solution |
+| Pitfall / Issue | Root Cause | Production Solution |
 | :--- | :--- | :--- |
-| **`Cannot find module './config/db' or its corresponding type declarations`** | `NodeNext` ESM module resolution requires the final `.js` extension on relative imports. | Write `.js` in relative imports in `.ts` files: `import connectDb from "./config/db.js"`. TypeScript knows this maps to `./config/db.ts`. |
-| **`Property 'id' does not exist on type 'Request'`** | Standard Express `Request` has no `id` property. | Create `src/types/express.d.ts` extending `Express.Request` through declaration merging. |
-| **`TypeError: Cannot read properties of undefined (reading 'userId')`** | Accessing populated Mongoose fields that could be null. | Use populated generic types: `task.populate<{ roadmapId: { userId: string } }>("roadmapId")` and optional chaining `task.roadmapId?.userId`. |
-| **`No overload matches this call` on `app.use(errorHandler)`** | Express `ErrorRequestHandler` requires exactly 4 arguments: `(err, req, res, next)`. | Type the middleware explicitly with `ErrorRequestHandler` from `express`. |
-| **`JWT decoded type is string | JwtPayload`** | `jwt.verify()` returns `string | JwtPayload`. Accessing `.userId` fails type checking. | Cast with custom interface: `as { userId: string }`. |
-| **`Mongoose Document methods missing on Plain Objects`** | Calling `.toObject()` on an object that is already plain JSON. | Verify method existence: `user.toObject ? user.toObject() : { ...user }`. |
+| **`Cannot find module ... or its corresponding type declarations`** | Under `"moduleResolution": "NodeNext"`, Node requires relative imports to use explicit file extensions. | In `.ts` files, import all local modules with `.js` extensions (e.g. `import { User } from "../models/user.js"`). TypeScript recognizes this maps to `./models/user.ts`. |
+| **`Property 'id' does not exist on type 'Request'`** | Standard Express `Request` interface does not include custom attributes. | Add `src/types/express.d.ts` with global declaration merging extending `Express.Request`. Ensure `src/**/*` is included in `tsconfig.json`. |
+| **`response.text is not a function`** | In `@google/genai` SDK v2.x, `response.text` is a getter property string, not a method. | Use `const text = response.text;` (do not call with parentheses). |
+| **`ReferenceError: cookieOptions is not defined`** | Cookies passed to `res.cookie()` without an explicit options object. | Define `cookieOptions` typed as `CookieOptionsType` with `httpOnly: true`, environment-aware `secure`, and `sameSite`. |
+| **`Cannot populate 'roadmapId.userId'`** | Mongoose `.populate()` without generic type parameters leaves parent object typed as `ObjectId`. | Pass the populated shape to populate generic: `task.populate<{ roadmapId: { userId: string } }>("roadmapId")`. |
+| **`Socket.io emit type error`** | Emitting an event not defined in `ServerToClientEvents`. | Define all event names and their payload shapes in `src/types/index.ts` and pass them to `Server<ClientToServerEvents, ServerToClientEvents>`. |
+| **`Error handler not catching controller errors`** | Registering `app.use(errorHandler)` before API routes. | Place the error handler middleware at the very end of `src/index.ts`, strictly after all `app.use("/api/...", ...)` routes. |
+| **`Mongoose enum validation error`** | Mismatch between request string case (e.g. `"service"`) and Schema enum (e.g. `["Service", "Product", "Big-Tech"]`). | Normalize or enforce typed union types (`TargetTier`) at the controller boundary before persisting. |
