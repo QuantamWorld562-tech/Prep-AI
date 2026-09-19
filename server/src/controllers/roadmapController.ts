@@ -1,3 +1,4 @@
+import type {Response,Request,NextFunction} from "express";
 import { Roadmap } from "../models/roadmapModel.js";
 import { Task } from "../models/taskModel.js";
 import { User } from "../models/userModel.js";
@@ -5,9 +6,9 @@ import { generateRoadmapJSON } from "../services/llmService.js";
 
 
 // ─── Get Active Roadmap ───────────────────────────────────────────────────────
-export const getMyRoadmap = async (req, res, next) => {
+export const getMyRoadmap = async (req:Request, res:Response, next:NextFunction):Promise<void> => {
   try {
-    const userId = req.id || req.user?._id;
+    const userId = req.id;
 
     if (!userId) {
       res.status(401);
@@ -31,10 +32,14 @@ export const getMyRoadmap = async (req, res, next) => {
 };
 
 // ─── Generate Roadmap (AI) ───────────────────────────────────────────────────
-export const generateRoadmap = async (req, res, next) => {
+export const generateRoadmap = async (req:Request, res:Response, next:NextFunction):Promise<void> => {
   try {
-    const userId = req.id || req.user?._id;
-    const {targetTier,targetLpa} = req.body;
+    const userId = req.id;
+    const { targetTier, targetLpa, trajectoryMode } = req.body as {
+      targetTier?: string;
+      targetLpa?: string | number;
+      trajectoryMode?: 'direct' | 'progressive';
+    };
 
     if (!userId) {
       res.status(401);
@@ -48,7 +53,7 @@ export const generateRoadmap = async (req, res, next) => {
     }
 
     const resolvedTier = user.targetTier || targetTier;
-    const resolvedLpa  = user.targetLpa  || targetLpa;
+    const resolvedLpa  = Number(user.targetLpa  ?? targetLpa);
 
     if (!resolvedTier || !resolvedLpa) {
       res.status(400);
@@ -66,7 +71,7 @@ export const generateRoadmap = async (req, res, next) => {
     }
 
     // 1. Fetch JSON from our LLM Service
-    const aiData = await generateRoadmapJSON(resolvedTier, resolvedLpa);
+    const aiData = await generateRoadmapJSON(resolvedTier, resolvedLpa, trajectoryMode || 'progressive');
 
     if (!aiData?.weeks || !Array.isArray(aiData.weeks)) {
       res.status(502);
@@ -123,4 +128,3 @@ export const generateRoadmap = async (req, res, next) => {
     next(error);
   }
 };
-
