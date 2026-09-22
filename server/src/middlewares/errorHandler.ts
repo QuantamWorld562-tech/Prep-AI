@@ -1,4 +1,16 @@
-const errorHandler = (err, req, res, next) => {
+import type {
+  Request,
+  Response,
+  NextFunction,
+  ErrorRequestHandler,
+} from "express";
+
+const errorHandler: ErrorRequestHandler = (
+  err: Error,
+  _req: Request,
+  res: Response,
+  _next: NextFunction,
+): void => {
   //check If a status code isn't set,set default to 500 (Internal Server Error)
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
 
