@@ -7,8 +7,8 @@ export interface IUser extends Document {
   username?: string; // Virtual alias for backward compatibility
   email: string;
   password?: string;
-  targetLpa: number;
-  targetTier: TargetTier;
+  targetLpa?: number;   // set when roadmap is generated
+  targetTier?: TargetTier; // set when roadmap is generated
   currentLpa: number;
   handles: {
     leetcode: string;
@@ -37,12 +37,12 @@ const userSchema = new Schema<IUser>(
     // AI GPS specific fields
     targetLpa: {
       type: Number,
-      required: true,
+      required: false, // provided only at roadmap generation
     },
     targetTier: {
       type: String,
       enum: ["Service", "Product", "Big-Tech"],
-      required: true,
+      required: false, // provided only at roadmap generation
     },
     currentLpa: {
       type: Number,
