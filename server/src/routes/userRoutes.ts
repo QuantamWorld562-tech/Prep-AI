@@ -1,12 +1,11 @@
-import express from "express";
+import {Router} from "express";
 import {
   login,
   logout,
   signUp,
 } from "../controllers/userController.js";
 
-
-const authRouter = express.Router();
+const authRouter:Router = Router();
 
 authRouter.post("/signup", signUp);
 authRouter.post("/login", login);
