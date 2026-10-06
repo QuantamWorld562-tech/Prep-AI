@@ -13,21 +13,58 @@
 // ──────────────────────────────────────────────────────────────────────────────
 
 import { GoogleGenAI } from "@google/genai";
+import type { TaskCategory } from "../types/index.js";
 
-let gemini;
-const getGemini = () => {
+let gemini: GoogleGenAI | null = null;
+
+const getGemini = (): GoogleGenAI => {
   if (!gemini) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not defined in environment variables");
+    }
     gemini = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey,
     });
   }
   return gemini;
 };
 
-export const generateRoadmapJSON = async (targetTier, targetLpa) => {
+export interface AIResponseTask {
+  title: string;
+  category: TaskCategory;
+  resourceLink?: string;
+  lpaWeight: number;
+}
+
+export interface AIResponseWeek {
+  weekNumber: number;
+  focusArea: string;
+  tasks: AIResponseTask[];
+}
+
+export interface AIRoadmapResponse {
+  weeks: AIResponseWeek[];
+}
+
+export const generateRoadmapJSON = async (
+  targetTier: string,
+  targetLpa: string | number,
+  trajectoryMode: 'direct' | 'progressive' = 'progressive',
+): Promise<AIRoadmapResponse> => {
+  const strategyInstruction =
+    trajectoryMode === 'progressive'
+      ? `STRATEGY MODE: STEPPED LADDER (PROGRESSIVE)
+    - Week 1 & 2 (Stage 1 - Safety Net): Focus strictly on 7-12 LPA core CS parity (Core Java/JS, OOPS, DBMS, Arrays, Strings, Two-Pointers, Sliding Window, Clean Code).
+    - Week 3 & 4 (Stage 2 - Target Leap): Ramp up directly to the ${targetLpa} LPA target (Trees, Graphs, Dynamic Programming, Scalable Microservices, Distributed Systems, High-Level Design).`
+      : `STRATEGY MODE: DIRECT VECTOR (STRICT)
+    - All 4 weeks are purely optimized for direct ${targetLpa} LPA Tier-1 Product rounds. Skip basic service-level fundamentals and dive straight into LeetCode Medium/Hard, Trees, Graphs, Dynamic Programming, and High-Throughput System Design.`;
+
   const prompt = `
     You are an expert Senior Software Engineer. Create a strict 4-week study roadmap for a developer aiming for a ${targetLpa} LPA job at a ${targetTier} tier company.
     
+    ${strategyInstruction}
+
     RULES:
     1. Select resources ONLY from these verified sources: Striver A2Z (DSA), Neetcode 150 (DSA), FreeCodeCamp (Dev), LeetCode Contests.
     2. Adjust the DSA vs Development ratio based on the Tier (Big Tech needs heavy DSA, Service needs more Dev).
@@ -64,6 +101,11 @@ export const generateRoadmapJSON = async (targetTier, targetLpa) => {
     },
   });
 
+  // Note: in @google/genai v2.x, `response.text` is a getter property string, NOT a function
   const text = response.text;
-  return JSON.parse(text);
+  if (!text) {
+    throw new Error("Empty response received from Gemini AI service");
+  }
+
+  return JSON.parse(text) as AIRoadmapResponse;
 };
